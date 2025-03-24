@@ -1,21 +1,27 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-use App\Http\Controllers\Api\BaseController as BaseController;
+
+use App\Http\Controllers\Controller;
 use App\Models\Subject;
-use Illuminate\Http\Request;
-class SubjectController extends BaseController
+use Illuminate\Http\JsonResponse;
+
+class SubjectController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        $subject = Subject::all();
+        $subjects = Subject::latest()->get();
 
-        return $this->sendResponse($subject, 'Success to get data for all subjects');
+        return response()->json([
+            'success' => true,
+            'status_code' => 200,
+            'message' => 'Success fetching all subjects',
+            'data' => $subjects
+        ], 200);
     }
-
 }
