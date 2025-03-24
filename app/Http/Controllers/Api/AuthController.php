@@ -2,37 +2,55 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Api\BaseController as BaseController;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use Validator;
-   
-class AuthController extends BaseController
+
+class AuthController extends Controller
 {
-     /**
-     * Login api
-     *
-     * @return \Illuminate\Http\Response
+    /**
+     * Login API
      */
     public function login(Request $request)
     {
-       
-        if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){ 
-            $user = Auth::user(); 
-            $success['token'] =  $user->createToken('MyApp')-> accessToken; 
-            $success['name'] =  $user->name;
-            
-            return $this->sendResponse($success, 'User login successfully.');
-        } 
-        else{ 
-            return $this->sendError('Unauthorised.', ['error'=>'Unauthorised']);
-        } 
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors(), 422);
+        }
+
+        // Autentikasi pengguna
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return $this->sendError('Unauthorized.', ['error' => 'Invalid credentials'], 401);
+        }
+
+        $user = Auth::user();
+        $token = $user->createToken('MyApp')->accessToken;
+
+        return $this->sendResponse([
+            'token' => $token,
+            'name' => $user->name
+        ], 'User login successfully.');
     }
 
-    public function logout()
+    /**
+     * Logout API
+     */
+    public function logout(Request $request)
     {
-    
-        Auth::logout();
+        $user = Auth::user();
+        if ($user) {
+            // Revoke semua token aktif user
+            $user->tokens()->delete();
+            return $this->sendResponse([], 'User logged out successfully.');
+        }
+
+        return $this->sendError('Unauthenticated.', [], 401);
     }
 }
