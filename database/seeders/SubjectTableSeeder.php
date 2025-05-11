@@ -3,19 +3,17 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\str;
 use App\Models\Subject;
+
 class SubjectTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
-    public function run()
+    public function run(): void
     {
-        Subject::Create([
-            'name' => "Haloo",
+        Subject::create([
+            'name' => 'Haii',
         ]);
     }
 }
